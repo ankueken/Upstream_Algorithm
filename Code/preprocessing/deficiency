@@ -1,0 +1,95 @@
+deficiency <- function(st, rev){
+  m <- nrow(st) # number of metabolites
+  r <- ncol(st) # number of reactions
+  p <- apply(abs(st), 2, sum)
+  pz <- which(p == 0)
+  if (length(pz) == 0)
+  {
+    g <- graph.empty(directed = TRUE)
+    Y <- integer(0)
+    A <- integer(0)
+		rea2=list()
+		pro2=list()
+    for (i in 1:r)
+    {
+      neg <- which(st[,i] < 0)
+      pos <- which(st[,i] > 0)
+      negst <- rep(0, m)
+      posst <- rep(0, m)
+      if ((length(neg) == 0) && (length(pos) != 0))
+      {
+        neg <- c(0)
+        negst <- rep(0, m)
+        posst[pos] <- st[pos, i]
+      }
+      else if ((length(pos) == 0) && (length(neg) != 0))
+      {
+        pos <- c(0)
+        posst <- rep(0, m)
+        negst[neg] <- abs(st[neg, i])
+      }
+      else
+      {
+        negst[neg] <- abs(st[neg, i])
+        posst[pos] <- st[pos, i]
+      }
+      if (neg[1] == 0)
+        q1 <- 1
+      if (pos[1] == 0)
+        q2 <- 1
+      if (neg[1] != 0)
+        q1 <- negst[neg[1]]
+      if (pos[1] != 0)
+        q2 <- posst[pos[1]]
+      reactant <- paste(q1, neg[1], sep = "*")
+      if (length(neg) >= 2)
+      {
+        for (j in 2:length(neg))
+          reactant <- paste(reactant, paste(negst[neg[j]], neg[j], sep = "*"), sep = "+")
+      }
+      product <- paste(q2, pos[1], sep = "*")
+      if (length(pos) >= 2)
+      {
+        for (j in 2:length(pos))
+          product <- paste(product, paste(posst[pos[j]], pos[j], sep = "*"), sep = "+")      
+      }
+     
+      rea <- which(V(g)$name == reactant)
+			rea2[i] <- reactant
+      pro <- which(V(g)$name == product)
+			pro2[i] <- product
+      if (length(rea) == 0)
+      {
+        g <- add.vertices(g, 1)
+        V(g)[vcount(g)]$name <- reactant
+        rea <- vcount(g)
+        Y <- cbind(Y, negst)
+      }
+      if (length(pro) == 0)
+      {
+        g <- add.vertices(g, 1)
+        V(g)[vcount(g)]$name <- product
+        pro <- vcount(g)
+        Y <- cbind(Y, posst)
+      }
+      g <- add.edges(g, c(rea, pro))          
+      if (rev[i] == 1)
+        g <- add.edges(g, c(pro, rea))
+    }
+    A <- matrix(0, vcount(g), ecount(g))
+    rownames(A) <- V(g)$name
+    el <- get.edgelist(g)
+    for (i in 1:nrow(el))
+    {
+      A[el[i,],i] <- c(-1, 1)
+    }
+    colnames(Y) <- V(g)$name
+  }
+  else
+  {
+    Y <- NA
+    A <- NA
+    g <- NA
+  }
+  return(list(Y=Y, A=A, g=g))
+}
