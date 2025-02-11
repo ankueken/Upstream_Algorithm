@@ -220,4 +220,19 @@ OverviewTable[3] = dim(Y)[1]
 }
 
 write.table(OverviewTable, file = paste("Overview_", gsub(".RData","",filenameR[kf]), ".csv", sep = ""))
+
+
+# #how many reactions are with substrate in giant module
+gm <- which.max(unlist(lapply(final_lres, length)))
+final_lres[[gm]] = final_lres[[gm]][which(is.na(final_lres[[gm]]) == FALSE)]
+A <- s$Results.balanced[,,1]$MODEL.r[[1]][[1]][,,1]$A
+reactions_in_giant <- c()
+for (i in 1:length(final_lres[[gm]]))
+{
+	reactions_in_giant <- c(reactions_in_giant, which(A[final_lres[[gm]][i],] == -1))
+}
+length(reactions_in_giant)
+RXNS_IN_GIANT[so] = length(reactions_in_giant)
+write.table(reactions_in_giant, file = paste("/work/ankueken/complex_coupling_toolbox/Code/Results/Reactions_Giant/Reactions_Giant_", filename[k], ".csv", sep = ""))
+ 
 print('Done')

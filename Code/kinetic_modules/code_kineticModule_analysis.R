@@ -2,9 +2,11 @@
 k=(commandArgs(TRUE))
 k=as.numeric(k)
 print(k)
+print('------------')
 
 library(R.matlab)
 library(igraph)
+setwd('../../Results/concordant/')
 
 filename <- dir(".","*.mat")
 
