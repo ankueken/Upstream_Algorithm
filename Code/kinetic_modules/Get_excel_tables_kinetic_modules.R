@@ -232,7 +232,6 @@ for (i in 1:length(final_lres[[gm]]))
 	reactions_in_giant <- c(reactions_in_giant, which(A[final_lres[[gm]][i],] == -1))
 }
 length(reactions_in_giant)
-RXNS_IN_GIANT[so] = length(reactions_in_giant)
 write.table(reactions_in_giant, file = paste("../../Results/Reactions_Giant/Reactions_Giant_", filename[k], ".csv", sep = ""))
  
 print('Done')
