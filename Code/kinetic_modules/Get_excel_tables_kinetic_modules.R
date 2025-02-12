@@ -9,10 +9,10 @@ library(igraph)
 ### update according to file  location ###
 ##########################################
 
-filenameR <- dir("..","*.RData")
+filenameR <- dir("../../Results/","*.RData")
 
 # the subset for which we have the stoichiometry
-filename_DONE <- dir("stoichiometric_coupling/","*.mat")
+filename_DONE <- dir("../../Results/stoichiometric_coupling/","*.mat")
 
 filename_DONE <- gsub(".mat",".RData",filename_DONE)
 filename_DONE <- gsub("stoichiometric_coupling","concordant",filename_DONE)
@@ -28,7 +28,7 @@ print(filenameR[k])
 species_order <- k
 kf <- species_order
 
-load(file = paste("..", filenameR[kf], sep = ""))
+load(file = paste("../../Results/", filenameR[kf], sep = ""))
 OverviewTable = rep(0, 22)
 
 Y <- as.matrix(s$Results.balanced[,,1]$MODEL.r[[1]][[1]][,,1]$Y)
@@ -88,7 +88,7 @@ metNames <- unlist(s$Results.balanced[,,1]$MODEL.r[[1]][[1]][,,1]$metNames)
 
 # #stoichiometric coupling
 print('stoichiometric coupling')
-q <- readMat(paste("stoichiometric_coupling/", gsub("RData","mat",gsub("concordant","stoichiometric_coupling",filenameR[kf])), sep = ""))
+q <- readMat(paste("../../Results/stoichiometric_coupling/", gsub("RData","mat",gsub("concordant","stoichiometric_coupling",filenameR[kf])), sep = ""))
 # #stoichiometric coupling of reactions
 A_mat <- abs(q$coupling.matrix)
 A_mat[which(A_mat == 2)] <- 0
@@ -189,8 +189,8 @@ q2 = metNames[qq]
 } else {
 q2 <- cbind(metNames[qq[,1]], metNames[qq[,2]])
 }
-write.table(q1, file = paste("MetSingle_", gsub(".RData","",filenameR[kf]), ".csv", sep = ""))
-write.table(q2, file = paste("MetDouble_", gsub(".RData","",filenameR[kf]), ".csv", sep = ""))
+write.table(q1, file = paste("../../Results/MetSingle/MetSingle_", gsub(".RData","",filenameR[kf]), ".csv", sep = ""))
+write.table(q2, file = paste("../../Results/MetDouble/MetDouble_", gsub(".RData","",filenameR[kf]), ".csv", sep = ""))
 
 
 #kinetic coupling
@@ -219,7 +219,7 @@ OverviewTable[3] = dim(Y)[1]
  OverviewTable[23] = length(reactions_in_giant)
 }
 
-write.table(OverviewTable, file = paste("Overview_", gsub(".RData","",filenameR[kf]), ".csv", sep = ""))
+write.table(OverviewTable, file = paste("../../Results/Overview/Overview_", gsub(".RData","",filenameR[kf]), ".csv", sep = ""))
 
 
 # #how many reactions are with substrate in giant module
@@ -233,6 +233,6 @@ for (i in 1:length(final_lres[[gm]]))
 }
 length(reactions_in_giant)
 RXNS_IN_GIANT[so] = length(reactions_in_giant)
-write.table(reactions_in_giant, file = paste("/work/ankueken/complex_coupling_toolbox/Code/Results/Reactions_Giant/Reactions_Giant_", filename[k], ".csv", sep = ""))
+write.table(reactions_in_giant, file = paste("../../Results/Reactions_Giant/Reactions_Giant_", filename[k], ".csv", sep = ""))
  
 print('Done')

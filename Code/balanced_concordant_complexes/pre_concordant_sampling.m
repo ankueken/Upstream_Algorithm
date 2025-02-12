@@ -1,8 +1,9 @@
-function [At,CC] = pre_concordant_sampling(model,name,B)
+function [At,CC] = pre_concordant_sampling(model,name,B,num_samples)
 
 % Input: model  -   model struct
 %        name   -   string specifying model name
 %        B      -   index of balanced complexes
+%        num_samples - number of samples per round
 %
 % Output: At    -   candidate pairs to check for concordance
 %         CC    -   complex x complex matrix indicating relation
@@ -14,7 +15,7 @@ function [At,CC] = pre_concordant_sampling(model,name,B)
     
     %% species degree
     species_degree_complexes = sum(model.Y~=0,2);
-    species_degree_reactions = sum(model.S~=0,2);
+    % species_degree_reactions = sum(model.S~=0,2);
     
     % trivially concordant pairs
     idx = find(species_degree_complexes==2);

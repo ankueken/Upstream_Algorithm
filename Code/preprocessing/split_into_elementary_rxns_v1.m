@@ -55,7 +55,7 @@ model_elementary.rules = cell(0,0);
 complex_list = zeros(size(model_elementary.S,1),0);
 
 for i = 1:length(model.rxns)
-disp(i/length(model.rxns))
+% disp(i/length(model.rxns))
 substrates = find(model.S(:,i)<0);
 products = find(model.S(:,i)>0);
     % if reaction has no GPR rule

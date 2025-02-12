@@ -1,4 +1,4 @@
-function run_preprocessing(files,f,type)
+function [model,name] = run_preprocessing(files,f,type,pathToR)
 
 % the code runs the preprocessing of models in folder Models/original 
 % and split of reactions into elementary reaction steps under 
@@ -11,17 +11,21 @@ function run_preprocessing(files,f,type)
 %                    considered the order itself is choosen randomly
 %                'random' - all possible orders of binding considered, see
 %                    convenience kinetics
-% Output: updated model file written into Models/models_with_elementary_steps/
+%       pathToR - absolute path to R (e.g. pathToR = '"C:\Users\Anika\AppData\Local\Programs\R\R-4.3.0\bin\Rscript.exe"';))
+% Output: updated model file also written into Models/models_with_elementary_steps/
 %
-% Requirements: CobraToolbox, R 
-% R will be called by systems('Rscript R_file.r ags')
-% one may has to give the absolute path to R (e.g. pathToR =
-% '"C:\Users\Anika\AppData\Local\Programs\R\R-4.3.0\bin\Rscript.exe"';))
+% Requirements: CobraToolbox, R with packages igraph and R.matlab
+% R will be called by systems('pathToR R_file.r ags')
+
 
 disp(f)
 addpath(genpath('Code/'))
 %%{
-name = files(f).name(1:end-4)
+if endsWith(files(f).name,'.sbml') 
+    name = files(f).name(1:end-5)
+else
+    name = files(f).name(1:end-4)
+end
 
 % disp('set cobra path')
 % COBRA_PATH = '/work/ankueken/Git/cobratoolbox/';
@@ -82,23 +86,23 @@ if strcmp(type,'random')
     
     model_elementary_random = convertToIrreversible(model_elementary_random);
     % save file 
-    mkdir('Models\temp\')
+    mkdir('Models/temp/')
     save(strcat('Models/temp/',name,'_random.mat'),"model_elementary_random")
     
     cd Code/preprocessing/
 
-    % pathToR = '"C:\Users\Anika\AppData\Local\Programs\R\R-4.3.0\bin\Rscript.exe"';
-    system(strjoin({'Rscript get_AY_matrix.r',strcat('../../Models/temp/',name,'_random.mat')}));
+    % pathToR = 'C:\Users\Anika\AppData\Local\Programs\R\R-4.3.0\bin\Rscript.exe';
+    system(strjoin({pathToR, ' get_AY_matrix.r',strcat('../../Models/temp/',name,'_random.mat')}));
     
     cd ../../Models/temp/
     % random model
-    A=importdata(strcat(name,'_random.A'));
-    model_elementary_random.A=sparse(A.data);
-    model_elementary_random.complexes=A.textdata(2:end);
-    clear A
-    Y=importdata(strcat(name,'_random.Y'));
-    model_elementary_random.Y=sparse(Y.data);
-    clear Y 
+    load(strcat(name,'_random_A.dat'))
+    load(strcat(name, '_random_complexes.mat'))
+    model_elementary_random.A=eval(['spconvert(' strcat(name,'_random_A') ')']);
+    model_elementary_random.complexes=complexes;
+    load(strcat(name,'_random_Y.dat'))
+    model_elementary_random.Y=eval(['spconvert(' strcat(name,'_random_Y') ')']);
+    clear complexes *_random_A *_random_Y
     cd ../../
     
     save(['Models/models_with_elementary_steps/' name '_pre_balanced_random.mat'],'-v7.3')
@@ -106,25 +110,31 @@ else
     [sol.x,sol.f,sol.stat,sol.output]=linprog(-model_elementary_fixed.c,model_elementary_fixed.S(model_elementary_fixed.csense=='L',:),model_elementary_fixed.b(model_elementary_fixed.csense=='L'),model_elementary_fixed.S(model_elementary_fixed.csense=='E',:),model_elementary_fixed.b(model_elementary_fixed.csense=='E'),model_elementary_fixed.lb,model_elementary_fixed.ub);
     
     model_elementary_fixed = convertToIrreversible(model_elementary_fixed);
+    mkdir('Models/temp/')
     save(strcat('Models/temp/',name,'_fixed.mat'),"model_elementary_fixed")
     
     cd Code/preprocessing/
     % pathToR = '"C:\Users\Anika\AppData\Local\Programs\R\R-4.3.0\bin\Rscript.exe"';
-    system(strjoin({'Rscript get_AY_matrix.r',strcat('../../Models/original/GEM_xml/',name,'_fixed.mat')}));
+    system(strjoin({pathToR, ' get_AY_matrix.r',strcat('../../Models/temp/',name,'_fixed.mat')}));
     
     cd ../../Models/temp/
-    % random model
-    A=importdata(strcat(name,'_fixed.A'));
-    model_elementary_fixed.A=sparse(A.data);
-    model_elementary_fixed.complexes=A.textdata(2:end);
-    clear A
-    Y=importdata(strcat(name,'_fixed.Y'));
-    model_elementary_fixed.Y=sparse(Y.data);
-    clear Y 
+    % fixed model
+    load(strcat(name,'_fixed_A.dat'))
+    load(strcat(name, '_fixed_complexes.mat'))
+    model_elementary_fixed.A=eval(['spconvert(' strcat(name,'_fixed_A') ')']);
+    model_elementary_fixed.complexes=complexes;
+    load(strcat(name,'_fixed_Y.dat'))
+    model_elementary_fixed.Y=eval(['spconvert(' strcat(name,'_fixed_Y') ')']);
+    clear complexes *_fixed_A *fixed_Y
     cd ../../
     
     save(['Models/models_with_elementary_steps/' name '_pre_balanced_fixed.mat'],'-v7.3')
 end
 system('rm -r Models/temp/')
+if exist('model_elementary_fixed')
+    model = model_elementary_fixed;
+else
+    model = model_elementary_random;
+end
 
 end
